@@ -29,17 +29,17 @@ jobs:
           cache-dependency-path: trhallam-docs/pnpm-lock.yaml
 
       - name: Install dependencies
-        run: |
-          cd trhallam-docs
-          pnpm install --frozen-lockfile
+        working-directory: ./trhallam-docs
+        run: pnpm install --frozen-lockfile
 
       - name: Build website
+        working-directory: ./trhallam-docs
         run: pnpm build
 
       - name: Upload Build Artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: build
+          path: ./trhallam-docs/build
 
   deploy:
     name: Deploy to GitHub Pages
