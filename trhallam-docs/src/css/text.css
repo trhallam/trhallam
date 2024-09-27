@@ -1,0 +1,9 @@
+p {
+    text-align: justify;
+}
+
+code {
+    hyphens: none;
+    word-break: unset;
+    word-wrap: unset;
+}
