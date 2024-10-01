@@ -1,6 +1,6 @@
 ## Tony Hallam  👋
 
-Read more about my adventures [here](https://github.io/trhallam/trhallam).
+Read more about my adventures [here](https://trhallam.github.io/trhallam).
 
 <!--
 **trhallam/trhallam** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
