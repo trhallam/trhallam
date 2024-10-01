@@ -22,3 +22,18 @@ hola:
   label: Hola
   permalink: /hola
   description: Hola tag description
+
+wasm:
+  label: WASM
+  permalink: /wasm
+  description: Web Assembly related
+
+rust:
+  label: Rust
+  permalink: /rust
+  description: Rust related
+
+typescript:
+  label: TypeScript
+  permalink: /ts
+  description: TypeScript related

@@ -1,0 +1,371 @@
+---
+slug: wasm-rust-gol
+title: Typescript and the WASM Rust Tutorial
+authors: [trhallam]
+tags: [rust, wasm, typescript]
+---
+
+Investigations of the [Rust WASM tutorial](https://rustwasm.github.io/docs/book/) with Typescript.
+
+<!-- truncate -->
+
+I had been looking for an interesting project to play around with Rust for a while and I found one
+(more on that in the future). But I had to first get acquainted with Rust again and more importantly
+with its cross compilation to the WASM runtime. For this there is the 
+[Rust WASM tutorial](https://rustwasm.github.io/docs/book/)
+which is a really nice comprehensive guide/intro to the topic. 
+
+My repository of the final topic is [here](https://github.com/trhallam/wasm-rust-gol). And the Typescript version of the
+tutorial is demonstrated on the [Game of Life Page](/trhallam/gol/gol).
+
+Working through the example as it is was fairly straight forward and the Javascript implementation worked with no changes
+required to the content at all. However, I like typing and I was interested to see where I could go with the Typescript
+implementation, including some upgrades to the code and this is where things got a little bit interesting.
+
+There are a few things to note about the Rust WASM tutorial beforehand however:
+
+ - The versions used by the templates (e.g. create-wasm-pack) are quite old. Node spits out a lot of warnings. Upgrading
+   creates some compatibility issues which I had to address during my conversion to TypeScript.
+ - [`wasm-pack`](https://github.com/rustwasm/wasm-pack) the package generator for Rust to WASM isn't 100% complete yet 
+   when it comes to TypeScript, which also
+   caused some issues.
+
+## Setting Up
+
+Follow the tutorial instructions for setup, including installing Rust and Node (or pnpm). For TypeScript you will need
+to add the `typescript` node package.
+
+```bash
+$ pnpm install -g typescript
+```
+
+## Project setup
+
+I wanted to place all my working for this example in a single repository. Hence I've moved the different parts of the example
+into their own subfolders, for example, the Rust code is under the `rs` tree.
+
+```bash
+$ tree -L 1 ./wasm-rust-gol
+wasm-rust-gol/
+├── LICENSE_APACHE
+├── LICENSE_MIT
+├── README.md
+├── rs
+├── www
+├── www.new
+└── www.ts
+```
+
+The three versions of `www` represent different iterations of the Javascript/Typescript conversion.
+
+ - `www`: The original Javascript implementation which is faithful to the Tutorial.
+ - `www.new`: Updated packages including the webpack bundler but still in Javascript.
+ - `www.ts`: Update packages and converted to TypeScript.
+
+## Updating the Rust packages
+
+The Rust package versions in the tutorial are a little out of date. So the first step was to update some values in the
+`Cargo.toml` file of the `rs` package. Important changes are
+
+```toml
+[package]
+edition = "2021"
+
+[dependencies]
+wasm-bindgen = "0.2.93"
+
+[dev-dependencies]
+wasm-bindgen-test = "0.3.43"
+```
+
+The `edition` keyword manages the backwards compatibility of individual Rust crates. I'm not limited to using `2018` as in
+the tutorial template so I've updated this to `2021`. The `wasm-` dependencies have also moved on since the tutorial template
+was written and I've updated these to the latest stable releases.
+
+When building the package I want to specify the output directory to outside the source tree. For me, this keeps the source
+tree clean and means I can package everything into a single directory. Although I've specified the `--target` flag here, it
+isn't strictly necessary, `wasm-pack build` uses `bundler` as the default target.
+
+```bash
+$ wasm-pack build --out-dir ../dist/wasm-rust-gol --target bundler
+```
+
+## Updating Javascript
+
+### Creating a fresh project
+
+After getting the original example working per the tutorial I wanted to make a few changes which have been captured under
+`./www.new` in the repo. In this version of the example I have regenerated the Webpack package using the 
+[Webpack CLI](https://webpack.js.org/api/#cli).
+
+```bash
+$ pnpm install -g webpack
+$ pnpm webpack init www.new
+```
+
+Follow the prompts selecting `ES6`, `webpack-dev-server=Y`, `simplify-html=Y`, `PWA=n`, `CSS only`, `PostCSS=n`,
+`extra-CSS-for-every-file=n`, `prettier-config=Y`, and `package-manager=pnpm` or alter individual values to suit your use
+case. This will generate the `www.new` directory with the webpack templated files matching your responses to the prompts.
+
+```bash
+$ tree www.new
+www.new
+├── README.md
+├── index.html
+├── package-lock.json
+├── package.json
+├── pnpm-lock.yaml
+├── src
+│   └── index.js
+└── webpack.config.js
+```
+
+There are some key differences to the original `www` project structure. The Javascript source code now sits under `www.new/src`,
+there is significantly more content in the `webpack.config.js` file and all of the webpack dependencies needed for your
+project will be added to the `package.json`. You can edit some of the fields in the `package.json` to suit your project
+(e.g. `version`, `description` and `name`.)
+
+Importantly the local WASM package compiled [previously](#updating-the-rust-packages) needs to be added to the dependencies
+which will allow us to import the package in the Javascript of our application.
+
+```json
+"devDependencies": {...},
+"dependencies": {
+    "wasm-rust-gol": "file:../dist/wasm-rust-gol"
+  }
+```
+### Create `gol.js`
+
+I decided to push all of the game of life Javascript into a separate file under 
+[`./src/gol.js`](https://github.com/trhallam/wasm-rust-gol/blob/master/www.new/src/gol.js). This is the same as for
+the tutorial example. In the example the `memory` variable imported from WASM looks like
+
+```js
+import { memory } from "wasm-rust-gol/wasm_rust_gol_bg";
+```
+
+but this resulted in an error for me. I had to change the reference to include the `.wasm` extension to make it work.
+
+```js
+import { memory } from "wasm-rust-gol/wasm_rust_gol_bg.wasm";
+```
+
+### Create `bootstrap.js`
+
+`./src/bootstrap.js` also comes from the original example. It's purpose is to check and load the example from `./src/gol.js`.
+
+```js
+import("./gol.js")
+  .catch(e => console.error("Error importing `gol.js`:", e));
+```
+
+The Webpack config must now also be modified to point to the `./src/bootstrap.js` as the entry point.
+
+```js title="webpack.config.js"
+const config = {
+    entry: './src/bootstrap.js',
+    ...
+}
+```
+
+### Modify `index.html`
+
+The `index.html` file was automatically created by Webpack when we initiated the package and it needs to be modified in
+line with the tutorial. The `canvas` object is identified through its `id` to be replaced by the javascript in `gol.js`.
+
+```html title="index.html"
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title>WASM-RUST-GOL-JSNew</title>
+</head>
+
+<body>
+    <canvas id="game-of-life-canvas"></canvas>
+</body>
+
+</html>
+```
+
+### CSS
+
+We could start the website now but first we will add some styling using CSS. This differs to the tutorial which put the
+styling directly in the HTML template (`index.html`). Simply move the same attributes to the CSS document using a `body`
+selector.
+
+```css title="./stylesheets/base.css
+body {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+```
+
+The CSS must then be loaded into the entrypoint for the package `bootstrap.js`.
+
+```js title="./src/bootstrap.js"
+...
+import * as style_base from "stylesheets/base.css";
+```
+
+### Running the development server
+
+Start the development server and Webpack's updated commands should automatically open the page.
+
+```bash
+$ pnpm run start
+```
+
+## Getting TypeScript working
+
+Getting TypeScript (TS) working was a little more challenging than for the original and updated javascript versions of this
+example. 
+
+This version also uses SCSS styling over CSS but it practically makes little difference apart from some configuration options
+for Webpack.
+
+### Setup
+
+Similar to the [javascript update](#updating-javascript) Webpack is used to setup a new package `www.ts` with a TypeScript
+solution template from the prompt. The template includes some additional files over the javascript template. This includes
+the TS compiler configuration `tsconfig.json` which needs to be configured and a tests folder.
+
+```bash
+$ tree www.ts
+www.ts
+├── README.md
+├── index.html
+├── package-lock.json
+├── package.json
+├── pnpm-lock.yaml
+├── src
+│   └── index.ts
+├── tests
+├── tsconfig.json
+└── webpack.config.js
+```
+
+Similar to the javascript packages we need to add the WASM package as a dependency to `package.json` and the install everything
+with `pnpm`.
+
+```json title="package.json"
+  "devDependencies": {
+    ...
+  },
+  "dependencies": {
+    "wasm-rust-gol": "file:../dist/wasm-rust-gol"
+  }
+```
+
+```bash
+$ pnpm install
+```
+
+### `webpack.config.js`
+
+Web Assembly has experimental support from Webpack for now and it needs to be enabled in the Webpack config for the modules
+to load correctly. This is done setting the experiments key in the exported config variable. We also want to add an alias
+for a stylesheets directory while here.
+
+```js title="webpack.config.js"
+module.exports = () => {
+    config.experiments = {
+        asyncWebAssembly: true
+    }
+    config.resolve = {
+        alias: {
+            stylesheets: path.resolve(__dirname, './stylesheets')
+        },
+    },
+    ...
+    return config;
+}
+```
+
+### `tsconfig.json`
+
+Creating some compatibility with WASM also needed compiler options to be specified in `tsconfig.json`. Through a bit 
+of trial and error it became apparent that updates were need to the `module` and `target` versions of ES. Older versions 
+didn't support the functionality necessary to run the application.
+
+```json title="tsconfig.json"
+{
+  "compilerOptions": {
+    "module": "es2022", // required for dynamic imports ERROR:TS1323
+    "target": "es2018", // TS2468, TS2585, TS2712 all fixed by including more recent es version
+    "moduleResolution": "Bundler", // TS2793 Can't find the wasm module
+  },
+  "include": [
+    "src/**/*.ts"
+  ]
+}
+```
+
+### `gol.ts`
+
+There were some issues in converting the `gol.js` to TS and I stumbled across this 
+[tutorial](https://kernhanda.github.io/tutorial-typescript-canvas-drawing/) which used the canvas
+object in a page. It inspired me to have a go at refactoring `gol.js` so that the game of life functionality was
+encapsulated within a class.
+
+The [results](https://github.com/trhallam/wasm-rust-gol/blob/master/www.ts/src/gol.ts) were fairly straight forward 
+I think, and significantly improved the legibility of the example javascript. I also added a `sleep` function to slow
+down the game simulation.
+
+The conversion to TS was quite simple, and once the compilation issues were resolved it functioned equivalently to the JS
+version.
+
+### Issues with `wasm-pack`
+
+Although the program will now run, it still reports a TS error from compilation.
+
+```bash
+[tsl] ERROR in /home/ahallam/dev/wasm-rust-gol/www.ts/src/gol.ts(6,24)
+      TS2307: Cannot find module 'wasm-rust-gol/wasm_rust_gol_bg.wasm' or its corresponding type declarations.
+```
+
+Although some of the TS type definitions are added to our WASM package, the raw declarations are missing from the
+`package.json` as outline in this [issue](https://github.com/rustwasm/wasm-pack/issues/1193). We can resolve the error by
+adding them to our `wasm-pack` created `package.json` and reinstall the package with `pnpm`.
+
+```json title="package.json"
+"files": [
+    "wasm_rust_gol_bg.wasm",
+    "wasm_rust_gol_bg.wasm.d.ts",
+    ...
+  ]
+```
+
+```bash
+$ cd www.ts
+$ pnpm install
+```
+
+Unfortunately, `wasm-pack` will overwrite the `package.json` each time you recompile the Rust crate. 
+Hopefully this will get fixed soon!
+
+### Final steps
+
+Similar to the Javascript Update you will need to modify the `index.html` template and the add the SCSS styling. Checkout
+the [repo](https://github.com/trhallam/wasm-rust-gol) if you are stuck.
+
+### Running the development server
+
+The TS version should now be working, start the development server and Webpack's updated commands should automatically open the page.
+
+```bash
+$ pnpm run start
+```
+
+## Links
+
+ - [Rust WASM tutorial](https://rustwasm.github.io/docs/book/)
+ - My worked example [repository](https://github.com/trhallam/wasm-rust-gol).
+ - Game of Life [page](/trhallam/gol/gol).
+ - Great [tutorial](https://kernhanda.github.io/tutorial-typescript-canvas-drawing/) on using the canvas object with TS.
