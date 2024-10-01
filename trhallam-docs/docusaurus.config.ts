@@ -87,8 +87,8 @@ const config: Config = {
           position: 'left',
           items: [
             {
-              label: 'TestPage',
-              to: '/test/test'
+              label: 'Conway\'s Game of Life',
+              to: '/gol/gol'
             }
           ]
         },
@@ -145,8 +145,9 @@ const config: Config = {
       copyright: `Copyright © ${new Date().getFullYear()} My Project, Inc. Built with Docusaurus.`,
     },
     prism: {
-      theme: prismThemes.github,
-      darkTheme: prismThemes.dracula,
+      theme: prismThemes.oneLight,
+      darkTheme: prismThemes.oneDark,
+      additionalLanguages: ['toml', 'bash', 'rust', 'python'],
     },
   } satisfies Preset.ThemeConfig,
 };
