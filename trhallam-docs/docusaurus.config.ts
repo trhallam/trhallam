@@ -89,7 +89,15 @@ const config: Config = {
             {
               label: 'Conway\'s Game of Life',
               to: '/gol/gol'
-            }
+            },
+            {
+              label: 'React Tic-tac-toe',
+              to: '/tictactoe'
+            },
+            // {
+            //   label: 'Super Secret Santa',
+            //   to: '/super-secret-santa'
+            // }
           ]
         },
         {

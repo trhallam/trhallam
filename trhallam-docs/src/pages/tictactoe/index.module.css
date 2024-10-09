@@ -1,0 +1,54 @@
+.tictactoe_main {
+    display: flex;
+    flex: 1;
+}
+
+.tictactoe_exp {
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    flex: 1
+}
+
+.tictactoe_board {
+    display: flex;
+    flex: 2;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.square {
+    font-size: 18vh;
+    margin: 5px;
+    border-radius: 5px;
+    border: 5px;
+    width: 20vh;
+    height: 20vh;
+}
+
+.board_row {
+    display: flex;
+}
+
+.board_status {
+    font-size: xx-large
+}
+
+.popup {
+    position: absolute;
+    top: 20vh;
+    margin: 10px;
+    background: var(--ifm-background-surface-color);
+    border: 5px solid var(--ifm-color-primary);
+    border-radius: 5px;
+    padding: 20px;
+    box-shadow: 3px 3px 10px black;
+    align-content: center;
+    font-size: xx-large
+}
+
+.button {
+    font-size: xx-large;
+    padding: 20px
+}
