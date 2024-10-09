@@ -99,8 +99,11 @@ After getting the original example working per the tutorial I wanted to make a f
 [Webpack CLI](https://webpack.js.org/api/#cli).
 
 ```bash
-$ pnpm install -g webpack
-$ pnpm webpack init www.new
+$ mkdir www.new
+$ cd www.new
+$ pnpm init
+$ pnpm add --save-dev webpack webpack-cli
+$ pnpm webpack init
 ```
 
 Follow the prompts selecting `ES6`, `webpack-dev-server=Y`, `simplify-html=Y`, `PWA=n`, `CSS only`, `PostCSS=n`,
