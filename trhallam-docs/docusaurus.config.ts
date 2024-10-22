@@ -29,6 +29,9 @@ const config: Config = {
     locales: ['en'],
   },
 
+  // plugins
+  plugins: [require.resolve('docusaurus-lunr-search'), require.resolve('custom-webpack')],
+
   presets: [
     [
       'classic',
@@ -94,10 +97,10 @@ const config: Config = {
               label: 'React Tic-tac-toe',
               to: '/tictactoe'
             },
-            // {
-            //   label: 'Super Secret Santa',
-            //   to: '/super-secret-santa'
-            // }
+            {
+              label: 'Super Secret Santa',
+              to: '/super-secret-santa'
+            }
           ]
         },
         {
@@ -127,9 +130,13 @@ const config: Config = {
           title: 'Community',
           items: [
             {
-              label: 'Stack Overflow',
-              href: 'https://stackoverflow.com/questions/tagged/docusaurus',
+              label: 'Github Discussions',
+              href: 'https://github.com/trhallam/trhallam/discussions',
             },
+            {
+              label: 'LinkedIn',
+              href: 'https://uk.linkedin.com/in/antonyhallam',
+            }
           ],
         },
         {
@@ -150,7 +157,7 @@ const config: Config = {
           ],
         },
       ],
-      copyright: `Copyright © ${new Date().getFullYear()} My Project, Inc. Built with Docusaurus.`,
+      copyright: `Copyright © ${new Date().getFullYear()} Tony Hallam. Built with Docusaurus.`,
     },
     prism: {
       theme: prismThemes.oneLight,

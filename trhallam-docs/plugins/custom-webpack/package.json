@@ -1,0 +1,9 @@
+{
+    "name": "custom-webpack",
+    "version": "0.0.0",
+    "private": true,
+    "devDependencies": {
+        "ts-loader": "^9.5.1",
+        "typescript": "^5.6.2"
+    }
+}

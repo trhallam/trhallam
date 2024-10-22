@@ -1,0 +1,63 @@
+/* Load the background images */
+div[class="who-main"] {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    font-family: 'Comic Sans MS';
+
+    background: url(./assets/snow.png), url(./assets/santa.png), url(./assets/snow.png), radial-gradient(#881a1a, #9b0f0f);
+    /* these repeat for each asset of the background to plot */
+    background-repeat: repeat, no-repeat, repeat, no-repeat;
+    background-size: 30vh, 50vh, 20vh, 100%;
+    animation-name: snow;
+    animation-duration: 10s;
+    animation-iteration-count: infinite;
+    animation-timing-function: linear;
+}
+
+@keyframes snow {
+    0% {
+        background-position: 130px 10vh, bottom right, 0 0vh, 0 0;
+    }
+
+    100% {
+        background-position: 130px 100vh, bottom right, 0 100vh, 0 0;
+    }
+}
+
+div[class="who-wrapper"] {
+    margin: auto;
+    padding: 20px;
+    background: repeating-linear-gradient(45deg,
+            #106737,
+            #106737 30px,
+            #FFFFFF 30px,
+            #FFFFFF 60px,
+            #b51919 60px,
+            #b51919 90px,
+            #FFFFFF 90px,
+            #FFFFFF 120px);
+    box-shadow: 3px 3px 10px rgba(0, 0, 0, .5);
+    height: 100%;
+}
+
+div[class="who-content"] {
+    padding: 40px;
+    background: white;
+    text-align: center;
+    color: black;
+}
+
+div[class="who-title"] {
+    font-size: 30px
+}
+
+div[class="who-pairing-name"] {
+    font-size: 90px;
+}
+
+div[class="who-pairing-details"] {
+    margin-bottom: 20px;
+
+    font-size: 20px;
+}
