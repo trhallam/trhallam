@@ -1,0 +1,21 @@
+{
+  "name": "wasm-rust-gol",
+  "type": "module",
+  "collaborators": [
+    "ahallam"
+  ],
+  "version": "0.1.0",
+  "files": [
+    "wasm_rust_gol_bg.wasm",
+    "wasm_rust_gol_bg.wasm.d.ts",
+    "wasm_rust_gol.js",
+    "wasm_rust_gol_bg.js",
+    "wasm_rust_gol.d.ts"
+  ],
+  "main": "wasm_rust_gol.js",
+  "types": "wasm_rust_gol.d.ts",
+  "sideEffects": [
+    "./wasm_rust_gol.js",
+    "./snippets/*"
+  ]
+}

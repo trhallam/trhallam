@@ -1,4 +1,4 @@
-import styles from './explanation.module.css';
+import styles from './styles.module.css';
 import mistletoe from './assets/mistletoe.png';
 
 export function Explanation() {

@@ -2,7 +2,7 @@ import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import { useHistory, useLocation } from '@docusaurus/router';
 import Layout from '@theme/Layout';
 
-import { decrypt_secret_santa } from '@site/static/super-secret-santa/super_secret_santa';
+// import { decrypt_secret_santa } from 'super-secret-santa/super_secret_santa';
 
 
 import './who.module.css';
@@ -12,8 +12,8 @@ function WhoMsg() {
     const location = useLocation();
     const params = new URLSearchParams(location.search);
 
-    const who = decrypt_secret_santa(params.get('key'), params.get('iv'), params.get('secret'));
-    console.log(who);
+    //const who = decrypt_secret_santa(params.get('key'), params.get('iv'), params.get('secret'));
+    const who = "Unknown";
     return (
         <div className="who-wrapper">
             <div className="who-content">

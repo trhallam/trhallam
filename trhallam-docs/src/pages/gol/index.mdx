@@ -2,14 +2,10 @@
 title: Rust WASM GoL
 ---
 
-<head>
-    <script defer="defer" src="wasm-gol.js"></script>
-</head>
-
 # Conway's Game of Life using Rust and WASM
 
 Conway's game of life using Rust and Wasm. Check out the [blog post](/trhallam/blog/wasm-rust-gol) to find out more detail.
 
-<div className="container" width="100%" align-items="center" display="flex">
-    <canvas id="game-of-life-canvas"></canvas>
-</div>
+import { GoL, Circle } from "@site/src/components/gol/gol";
+
+<GoL />

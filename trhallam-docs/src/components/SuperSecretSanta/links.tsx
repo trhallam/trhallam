@@ -1,5 +1,4 @@
-// Styling
-import styles from './links.module.css';
+import styles from './styles.module.css';
 
 interface SecretLinkProps {
     name: string;

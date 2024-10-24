@@ -1,12 +1,13 @@
 // Docusaurus and React
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import Layout from '@theme/Layout';
-import { useState } from 'react';
+import { useState, lazy } from 'react';
 
 // Secret Santa modules
-import { get_secret_santas } from '@site/static/super-secret-santa/super_secret_santa';
-import { Explanation } from "./explanation";
-import { SecretLink } from './links';
+// import { get_secret_santas } from 'super-secret-santa/super_secret_santa';
+// import { get_secret_santas } from 'super_secret_santa';
+import { Explanation } from "@site/src/components/SuperSecretSanta/explanation";
+import { SecretLink } from '@site/src/components/SuperSecretSanta/links';
 
 // Styling
 import styles from './index.module.css';
@@ -55,8 +56,8 @@ function SecretSantaForm(): JSX.Element {
 
         // pass formJson.input
         setInstructions(instr)
-        const pair_map = get_secret_santas(instr);
-
+        // const pair_map = get_secret_santas(instr);
+        const pair_map = Object();
         console.log("pair map", pair_map);
         // console.log(pairs.entries());
         setPairs(pair_map);

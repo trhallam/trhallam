@@ -2,6 +2,8 @@ import { themes as prismThemes } from 'prism-react-renderer';
 import type { Config } from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
 
+
+
 const config: Config = {
   title: 'Tony Hallam',
   tagline: 'Dinosaurs are cool',
@@ -91,16 +93,16 @@ const config: Config = {
           items: [
             {
               label: 'Conway\'s Game of Life',
-              to: '/gol/gol'
+              to: '/gol'
             },
             {
               label: 'React Tic-tac-toe',
               to: '/tictactoe'
             },
-            {
-              label: 'Super Secret Santa',
-              to: '/super-secret-santa'
-            }
+            // {
+            //   label: 'Super Secret Santa',
+            //   to: '/super-secret-santa'
+            // }
           ]
         },
         {
