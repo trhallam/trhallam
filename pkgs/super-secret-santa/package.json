@@ -4,6 +4,7 @@
   "version": "0.1.0",
   "files": [
     "super_secret_santa_bg.wasm",
+    "super_secret_santa_bg.wasm.d.ts",
     "super_secret_santa.js",
     "super_secret_santa_bg.js",
     "super_secret_santa.d.ts"
