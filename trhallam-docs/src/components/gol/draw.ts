@@ -1,12 +1,8 @@
-import { Universe, Cell } from "@trhallam/gol";
-
 export type ColourValueHex = `#${string}`;
 
 interface DrawGoLProps {
     canvas: React.MutableRefObject<HTMLCanvasElement | null>;
     cell_size: number;
-    universe: Universe;
-    cells: Uint8Array;
     height: number;
     width: number;
 };
@@ -14,7 +10,7 @@ interface DrawGoLProps {
 export const drawGrid = (props: DrawGoLProps) => {
     const GRID_COLOR: ColourValueHex = "#CCCCCC";
 
-    const { canvas, cell_size, universe, cells, width, height } = props;
+    const { canvas, cell_size, width, height } = props;
     const ctx = canvas?.current?.getContext('2d');
 
     ctx.beginPath();
@@ -35,17 +31,17 @@ export const drawGrid = (props: DrawGoLProps) => {
     ctx.stroke();
 };
 
-export const drawCells = (props: DrawGoLProps) => {
+export const drawCells = (props: DrawGoLProps, cells: Uint8Array<any>, dead: any) => {
     const DEAD_COLOR: ColourValueHex = "#FFFFFF";
     const ALIVE_COLOR: ColourValueHex = "#000000";
-    const { canvas, cell_size, universe, cells, width, height } = props;
+    const { canvas, cell_size, width, height } = props;
     const ctx = canvas?.current?.getContext('2d');
     ctx.beginPath();
 
     for (let row = 0; row < height; row++) {
         for (let col = 0; col < width; col++) {
             let idx = row * width + col;
-            ctx.fillStyle = cells[idx] === Cell.Dead
+            ctx.fillStyle = cells[idx] === dead
                 ? DEAD_COLOR
                 : ALIVE_COLOR;
 
