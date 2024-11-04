@@ -99,10 +99,10 @@ const config: Config = {
               label: 'React Tic-tac-toe',
               to: '/tictactoe'
             },
-            // {
-            //   label: 'Super Secret Santa',
-            //   to: '/super-secret-santa'
-            // }
+            {
+              label: 'Super Secret Santa',
+              to: '/super-secret-santa'
+            }
           ]
         },
         {

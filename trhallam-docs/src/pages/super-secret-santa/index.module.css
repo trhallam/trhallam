@@ -1,0 +1,12 @@
+.main {
+    display: flex;
+    flex: 1;
+    font-family: 'Comic Sans MS';
+    margin: 16px;
+
+    background-image: url(/img/secretsanta/santa.png);
+    background-position: bottom right;
+    background-repeat: no-repeat;
+    background-size: 50vh;
+    justify-content: center;
+}

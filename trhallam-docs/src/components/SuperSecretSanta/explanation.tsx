@@ -1,11 +1,11 @@
+import useBaseUrl from '@docusaurus/useBaseUrl';
 import styles from './styles.module.css';
-import mistletoe from './assets/mistletoe.png';
 
 export function Explanation() {
     return (
         <div className={styles.part}>
             <div className={styles.instructions}>
-                <h1><img src={mistletoe} style={{ verticalAlign: "middle" }} /> Super Secret Santa Generator</h1>
+                <h1><img src={useBaseUrl('img/secretsanta/mistletoe.png')} style={{ verticalAlign: "middle" }} /> Super Secret Santa Generator</h1>
                 <p>This application is a shameless copy of another
                     <a href="https://github.com/arcanis/secretsanta"> open-source project </a>
                     but ported to TypeScript and implemented using a WASM compiled Rust library 🦀.

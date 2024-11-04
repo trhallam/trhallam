@@ -5,7 +5,8 @@ div[class="who-main"] {
     flex: 1;
     font-family: 'Comic Sans MS';
 
-    background: url(./assets/snow.png), url(./assets/santa.png), url(./assets/snow.png), radial-gradient(#881a1a, #9b0f0f);
+    background: url(/img/secretsanta/snow.png), url(/img/secretsanta/santa.png), url(/img/secretsanta/snow.png), radial-gradient(#881a1a, #9b0f0f);
+
     /* these repeat for each asset of the background to plot */
     background-repeat: repeat, no-repeat, repeat, no-repeat;
     background-size: 30vh, 50vh, 20vh, 100%;
