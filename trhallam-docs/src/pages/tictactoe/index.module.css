@@ -23,8 +23,8 @@
     margin: 5px;
     border-radius: 5px;
     border: 5px;
-    width: 20vh;
-    height: 20vh;
+    width: min(20vh, 20vw);
+    height: min(20vh, 20vw);
 }
 
 .board_row {
@@ -54,5 +54,5 @@
 }
 
 .instructions {
-    margin: auto 10%;
+    min-width: 300px;
 }

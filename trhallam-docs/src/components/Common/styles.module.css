@@ -1,0 +1,13 @@
+.row {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    padding-inline: 5vw;
+}
+
+.column {
+    flex: 1;
+    margin: 20px;
+    min-width: 300px;
+}

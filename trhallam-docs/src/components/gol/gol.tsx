@@ -1,5 +1,6 @@
 import { useRef, useEffect, useState } from 'react';
-
+import clsx from 'clsx';
+import { Row } from "@site/src/components/Common";
 import { drawGrid, drawCells } from "./draw";
 // Styling
 import styles from './styles.module.css';
@@ -58,9 +59,11 @@ function render(): JSX.Element {
     }, [animate]);
 
     return (
-        <div className={styles.div_canvas}>
-            <p className={styles.p_canvas}><canvas ref={canvas} width={500} height={400} /></p>
-        </div>
+        <Row>
+            <div className={clsx("gol", styles.div_canvas)}>
+                <p className={styles.p_canvas}><canvas ref={canvas} width={500} height={400} /></p>
+            </div>
+        </Row>
     );
 }
 

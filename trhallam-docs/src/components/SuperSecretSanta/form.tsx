@@ -1,10 +1,6 @@
 // Docusaurus and React
 import React, { useEffect, useState } from 'react';
 
-// Secret Santa modules
-// import { get_secret_santas } from 'super-secret-santa/super_secret_santa';
-// import { get_secret_santas } from 'super_secret_santa';
-
 import { SecretLink } from '@site/src/components/SuperSecretSanta/links';
 
 // Styling
@@ -50,7 +46,7 @@ const emptyForm = (onSubmit, instructions) => {
 
 const filledForm = (onAlter, instructions, links) => {
     return (
-        <div className={styles.part} >
+        <>
             <h3>Secret Santa Instructions</h3>
             <textarea
                 className={styles.input}
@@ -66,7 +62,7 @@ const filledForm = (onAlter, instructions, links) => {
             </div>
             <button onClick={() => onAlter()} className={styles.generate}>
                 Amend pairings</button>
-        </div>
+        </>
     )
 }
 
@@ -75,7 +71,6 @@ function render(): JSX.Element {
     const [isGen, setIsGen] = useState(false);
     const [instructions, setInstructions] = useState("");
     const [pairs, setPairs] = useState<Map<String, Object>>(new Map());
-
     const [wasm, setWasm] = useState(null);
 
 
@@ -95,10 +90,16 @@ function render(): JSX.Element {
         // Or you can work with it as a plain object:
         const formJson = Object.fromEntries(formData.entries());
         const instr = formJson.input.toString();
-
+        let pair_map = new Map();
         // pass formJson.input
         setInstructions(instr)
-        const pair_map = wasm.get_secret_santas(instr);
+        try {
+            pair_map = wasm.get_secret_santas(instr);
+        } catch (e) {
+            console.log(e);
+            console.log("Could not generate pairings.")
+            return null;
+        }
         // const pair_map = new Map;
         // console.log("pair map", pair_map);
         // console.log(pairs.entries());
