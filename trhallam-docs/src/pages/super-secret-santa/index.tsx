@@ -7,7 +7,7 @@ import { Explanation, SecretSantaForm } from "@site/src/components/SuperSecretSa
 import { Page, Row, Column } from "@site/src/components/Common";
 
 // Styling
-import styles from './index.module.css';
+import styles from './index.module.scss';
 
 export default function SecretSanta(): JSX.Element {
     const { siteConfig } = useDocusaurusContext();

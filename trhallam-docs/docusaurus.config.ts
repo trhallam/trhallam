@@ -32,7 +32,7 @@ const config: Config = {
   },
 
   // plugins
-  plugins: [require.resolve('docusaurus-lunr-search'), require.resolve('custom-webpack')],
+  plugins: ["docusaurus-plugin-sass", require.resolve('docusaurus-lunr-search'), require.resolve('custom-webpack')],
 
   presets: [
     [
