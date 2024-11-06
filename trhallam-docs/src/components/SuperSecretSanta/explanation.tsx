@@ -1,15 +1,13 @@
-import useBaseUrl from '@docusaurus/useBaseUrl';
-import styles from './styles.module.css';
+import clsx from 'clsx';
 
-export function Explanation() {
+export function Explanation({ className = "" }) {
     return (
-        <div className={styles.instructions}>
-            <h1><img src={useBaseUrl('img/secretsanta/mistletoe.png')} style={{ verticalAlign: "middle" }} /> Super Secret Santa Generator</h1>
+        <div className={clsx(className)}>
             <p>This application is a shameless copy of another
                 <a href="https://github.com/arcanis/secretsanta"> open-source project </a>
                 but ported to TypeScript and implemented using a WASM compiled Rust library 🦀.
                 The front end is broadly similar but the internals are quite different. If you want to know more
-                about this project, please read the <a href="./blog/super-secret-santa">blog post</a>.
+                about this project, please read the <a href="./blog/super-secret-santa-1">blog post</a>.
             </p>
 
             <h2>Guide</h2>

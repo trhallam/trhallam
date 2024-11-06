@@ -10,3 +10,133 @@
     background-size: 50vh;
     justify-content: center;
 }
+
+.page {
+    background-image: url(/img/secretsanta/santa-bg3.png);
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+.text {
+    background-color: rgba(0, 0, 0, 0.512);
+    padding: 10px;
+    border-color: rgba(0, 0, 0, 0.512);
+    border-width: 10px;
+    border-radius: 10px;
+
+    a {
+        color: rgb(255, 18, 18);
+    }
+
+    color: white;
+    font-family: 'Comic Sans MS';
+}
+
+.form {
+    textarea {
+        height: 50vh;
+        width: 100%;
+        resize: vertical;
+        border: 3px solid #ffbf10;
+        border-radius: 5px;
+        padding: 15px;
+        outline: none;
+        background: #90909045;
+        color: white;
+    }
+
+    textarea:focus {
+        box-shadow: 0 0 10px #ffbf10b0;
+    }
+
+    textarea::placeholder {
+        color: rgb(244, 244, 244);
+    }
+
+    button:hover {
+        box-shadow: 0 0 10px #ffbf10b0;
+    }
+
+    button {
+        border: 3px solid #ffbf10;
+        border-radius: 5px;
+        font-family: inherit;
+        font-size: xx-large;
+        color: black;
+        text-shadow: 0 0 10px whitesmoke;
+        width: 100%;
+        padding: 10px;
+
+        background: repeating-linear-gradient(45deg,
+                #106737 0px,
+                #106737 30px,
+                #FFFFFF 30px,
+                #FFFFFF 60px,
+                #b51919 60px,
+                #b51919 90px,
+                #FFFFFF 90px,
+                #FFFFFF 120px);
+        background-size: 170px 100vh;
+        animation: pole 10s linear infinite;
+    }
+
+    .column {
+        width: 100%;
+        margin: 0
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        border-radius: 5px;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+        margin: 25px 0;
+        font-size: 1em;
+
+
+        a {
+            width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+    }
+
+    thead {
+        background-color: #106737;
+        text-align: left;
+        border: unset;
+    }
+
+    th,
+    td,
+    tr {
+        padding: 5px 15px;
+        border: unset;
+    }
+
+    tbody tr {
+        border-bottom: 1px solid #dddddd
+    }
+
+    tbody tr:nth-of-type(even) {
+        background-color: #2020209b;
+    }
+
+    tbody tr:last-of-type {
+        border-bottom: 2px solid #009879;
+    }
+
+    ;
+}
+
+@keyframes pole {
+    0% {
+        background-position: 0 0;
+    }
+
+    100% {
+        background-position: -170px 0;
+    }
+}

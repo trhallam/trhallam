@@ -7,6 +7,8 @@ import { SecretLink } from '@site/src/components/SuperSecretSanta/links';
 import styles from './styles.module.css';
 import BrowserOnly from '@docusaurus/BrowserOnly';
 
+import { Column } from "@site/src/components/Common";
+
 const formID: string = "santaForm";
 const default_text: string = (
     `# You can add a user by adding a line
@@ -27,47 +29,53 @@ const default_text: string = (
             Nicholas (the saint) =Nicholas (the elf)
             `)
 
-const emptyForm = (onSubmit, instructions) => {
+const emptyForm = (onSubmit, instructions, className) => {
     return (
-        <form id={formID} method="post" onSubmit={onSubmit} className={styles.part}>
-            <h3>Secret Santa Instructions</h3>
+        <form id={formID} method="post" onSubmit={onSubmit} className={className}>
+            <h2>Secret Santa Instructions</h2>
             <textarea
                 name="input"
                 id="input"
-                className={styles.input}
                 placeholder={default_text.replace(/^[ \t]+/gm, '')}
                 defaultValue={instructions}
                 autoFocus>
             </textarea>
-            <button type='submit' className={styles.generate}>Generate Pairings</button>
+            <button type='submit'>Generate Pairings</button>
         </form>
     )
 }
 
-const filledForm = (onAlter, instructions, links) => {
+const filledForm = (onAlter, instructions, links, className) => {
     return (
-        <>
-            <h3>Secret Santa Instructions</h3>
+        <div className={className}>
+            <h2>Secret Santa Instructions</h2>
             <textarea
-                className={styles.input}
                 defaultValue={instructions}
                 disabled>
             </textarea>
             {/* Put the generated pairings in the next div. */}
-            <div className={styles.result}>
-                <h3>The Pairings</h3>
-                <table className={styles.result_table}>
-                    {links}
+            <Column>
+                <h2>The Pairings</h2>
+                <table>
+                    <thead>
+                        <tr key="header">
+                            <th> Name</th>
+                            <th> Secret Link</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {links}
+                    </tbody>
                 </table>
-            </div>
-            <button onClick={() => onAlter()} className={styles.generate}>
-                Amend pairings</button>
-        </>
+            </Column>
+            <button onClick={() => onAlter()}>
+                Amend Pairings</button>
+        </div>
     )
 }
 
 
-function render(): JSX.Element {
+function render({ className }): JSX.Element {
     const [isGen, setIsGen] = useState(false);
     const [instructions, setInstructions] = useState("");
     const [pairs, setPairs] = useState<Map<String, Object>>(new Map());
@@ -115,15 +123,15 @@ function render(): JSX.Element {
 
     const renderInputOutput = () => {
         if (!isGen) {
-            return emptyForm(handleSubmit, instructions);
+            return emptyForm(handleSubmit, instructions, className);
         } else {
             const pair_map = Array.from(
                 pairs.keys()).map(
                     (n, index) => (
-                        <SecretLink name={n.valueOf()} secrets={pairs.get(n)} />
+                        <SecretLink name={n.valueOf()} secrets={pairs.get(n)} className={""} />
                     )
                 );
-            return (filledForm(handleAlter, instructions, pair_map))
+            return (filledForm(handleAlter, instructions, pair_map, className))
         }
     }
 
@@ -133,10 +141,10 @@ function render(): JSX.Element {
 }
 
 
-export const SecretSantaForm: React.FC = () => {
+export function SecretSantaForm({ className = "" }): JSX.Element {
     return (
         <BrowserOnly fallback={<div>Loading...</div>}>
-            {() => { return render() }}
+            {() => { return render({ className }) }}
         </BrowserOnly>
     )
 }

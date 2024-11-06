@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import Layout from '@theme/Layout';
+import { Column, Row, Page } from '@site/src/components/Common';
 import styles from './index.module.css';
 
 /** Follow along from https://react.dev/learn/tutorial-tic-tac-toe but using TypeScript*/
@@ -136,14 +137,12 @@ function calculateWinner(squares: string[]): string {
 
 function Explanation(): JSX.Element {
     return (
-        <div className={styles.part}>
-            <div className={styles.instructions}>
-                <h1>React Tic-tac-toe</h1>
-                <p>A TypeScript recreation of the React tutorial. Additions include; the use of TypeScript
-                    a reset popup rather than a history and a win counter for each player.
-                    Styling is via CSS which also includes integration into the Docusaurus colour variables.</p>
-                <p>Checkout the tutorial <a href="https://react.dev/learn/tutorial-tic-tac-toe">here</a>.</p>
-            </div>
+        <div className={styles.instructions}>
+            <h1>React Tic-tac-toe</h1>
+            <p>A TypeScript recreation of the React tutorial. Additions include; the use of TypeScript
+                a reset popup rather than a history and a win counter for each player.
+                Styling is via CSS which also includes integration into the Docusaurus colour variables.</p>
+            <p>Checkout the tutorial <a href="https://react.dev/learn/tutorial-tic-tac-toe">here</a>.</p>
         </div>
     )
 }
@@ -154,14 +153,16 @@ export default function Game(): JSX.Element {
             title={`TicTacToe`}
             description="The React tutorial">
             {
-                <div className={styles.tictactoe_main}>
-                    <div className={styles.tictactoe_exp}>
-                        <Explanation />
-                    </div>
-                    <div className={styles.tictactoe_board}>
-                        <Board />
-                    </div>
-                </div>
+                <Page>
+                    <Row >
+                        <Column >
+                            <Explanation />
+                        </Column>
+                        <Column>
+                            <Board />
+                        </Column>
+                    </Row>
+                </Page>
             }
         </Layout >
     );
