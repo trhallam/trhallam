@@ -6,3 +6,6 @@ years.
 
 ### Python 🐍:
  - [SEGY-SAK](./segysak): A Python library for loading SEG-Y data into Xarray. 
+
+### WASM
+ - [Super Secret Santa](./super-secret-santa): A Rust and Docusaurus implementation of a stateless secret santa.
