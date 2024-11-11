@@ -77,7 +77,7 @@ const filledForm = (onAlter, instructions, links, className) => {
 
 function render({ className }): JSX.Element {
     const [isGen, setIsGen] = useState(false);
-    const [instructions, setInstructions] = useState("");
+    const [instructions, setInstructions] = useState(localStorage.getItem("secret-santa"));
     const [pairs, setPairs] = useState<Map<String, Object>>(new Map());
     const [wasm, setWasm] = useState(null);
 
@@ -100,7 +100,8 @@ function render({ className }): JSX.Element {
         const instr = formJson.input.toString();
         let pair_map = new Map();
         // pass formJson.input
-        setInstructions(instr)
+        setInstructions(instr);
+        localStorage.setItem("secret-santa", instr);
         try {
             pair_map = wasm.get_secret_santas(instr);
         } catch (e) {
