@@ -85,6 +85,12 @@ const config: Config = {
           position: 'left',
           label: 'Projects',
         },
+        {
+          type: 'docSidebar',
+          sidebarId: 'listSidebar',
+          position: 'left',
+          label: 'Lists'
+        },
         { to: '/blog', label: 'Blog', position: 'left' },
         {
           type: 'dropdown',
