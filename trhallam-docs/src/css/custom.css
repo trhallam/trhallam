@@ -16,6 +16,7 @@
   --ifm-color-primary-light: #0058e6;
   --ifm-color-primary-lighter: #005cf0;
   --ifm-color-primary-lightest: #116cff;
+  --ifm-color-primary-lightest-alpha-20: #116cff30
 }
 
 /* For readability concerns, you should choose a lighter palette in dark mode. */
@@ -27,4 +28,11 @@
   --ifm-color-primary-light: #f7a354;
   --ifm-color-primary-lighter: #f8aa62;
   --ifm-color-primary-lightest: #fac28d;
+  --ifm-color-primary-lightest-alpha-20: #fac28d30
+}
+
+details[type='code'] {
+  border-color: var(--ifm-color-primary-dark);
+  --docusaurus-details-decoration-color: var(--ifm-color-primary-dark);
+  background-color: var(--ifm-color-primary-lightest-alpha-20);
 }
