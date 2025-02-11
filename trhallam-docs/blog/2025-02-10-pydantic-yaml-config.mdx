@@ -1,0 +1,584 @@
+---
+slug: pydantic-yaml-config
+title: Configuration files using Pydantic and YAML
+authors: [trhallam]
+tags: [python, pydantic, yaml, configuration]
+---
+
+Often when working on custom Python tooling or commandline applications it might be helpful to have
+some sort of configuration file rather than passing a long list of flags and arguments in the shell.
+There are a lot of different configuration file formats people use like ini, toml, json and yaml. 
+Generally I prefer YAML
+because of its easy to read structure and the simplicity with which it maps to Python objects, 
+particularly dictionaries.
+YAML also supports comments which can be a big plus when you want to explain what parameters are or 
+why you have a particularly value for your deployment.
+
+This post describes one implementation for managing YAML configurations using 
+[Pydantic](https://docs.pydantic.dev/latest/) 
+with some improvements for usability and documentation.
+
+<!-- truncate -->
+
+In this example I'm going to demonstrate a configuration model for a program that reads CSV files. 
+A lot of the configuration
+parameters will be based upon what `pandas.read_csv` would need but is just for demonstrative purposes.
+
+## Pydantic models
+
+Pydantic is a great data/type validation library for Python. It uses Python type hints to perform 
+operations such as schema validation, serialisation and deserialisation (serde) and is highly 
+extensible and customisable. It is perfect for configuration as it
+will dump most simple types to JSON which can then be exported to YAML via the `pydantic-yaml` plugin library.
+
+### The `FileModel`
+
+Lets start by creating a very simple Pydantic model for a configuration file. The new class `FileModel` 
+inherits the `BaseModel` from `pydantic` to benefit from the verification, validation and serde functionality 
+of Pydantic. It is possible to only define the configuration parameter (`Field`) with just a name and type. 
+For example, `separator: str`. However, here we become more explicit and define a default value in 
+case the user does not provide the value in our configuration input.
+
+```python
+from pydantic import BaseModel, Field
+
+class FileModel(BaseModel):
+    separator: str = Field(default='')
+    header_row: int = Field(default=0)
+    skip_initial_space: bool = Field(default=True)
+    skip_rows: List[int] | int = Field(default=None)
+    skip_footer: int = Field(default=0)
+    nrows: int = Field(default=None)
+    comment: str = Field(default=None)
+```
+
+Whilst the type checking is included with Pydantic (e.g. `header_row` will be typecast to `int`) additional contextual logic can be
+added to a pydantic model using validator logic. For example, it does not make sense for `header_row` to be less than 0 as
+the file line index is always a positive value.
+
+```python
+class FileModel(BaseModel):
+
+    ...
+
+    @field_validator('header_row')
+    @classmethod
+    def _chk_header_rows(cls, v: int) -> int:
+        if v < 0:
+            raise ValueError("header_row must be greater than or equal to 0")
+        return v
+```
+
+### The `FeatureModel`
+
+The CSV files which the program will process contain a number of columns (features) that need to be processed. The program needs
+some additional information about each feature like it's name, data type and so forth. These parameters are repeated for
+each feature so their configuration can be captured in a separate Pydantic model. This time no default is given for `name`
+or `dtype` which will force the user to supply them for each feature specified in the configuration.
+
+```python
+class FeatureModel(BaseModel):
+    name: str
+    dtype: str
+    skip: bool = Field(default=False)
+    na_values: str = Field(default=None)
+```
+
+### Combining Models
+
+The two models can now be combined either through mixing of the two models which would create a sub-section for each model or
+through partial inheritance. This implementation will use the later keeping the `FileModel` parameters at the top level of
+the YAML document and creating a new parameter called `fields` as a list of `FeatureModel` definitions. 
+
+To do this, `ConfigModel` inherits `FileModel` and `fields is added as a new parameter.
+
+```python
+from typing import List
+
+class ConfigModel(FileModel):
+    fields: List[FeatureModel] = Field(default=[])
+```
+
+Pydantic is quite smart about this process and will even preserve the order of inheritance (which will be useful later).
+We can explore our combined `ConfigModel` with it's default values in the interpreter.
+
+```python
+>>> c = ConfigModel()
+>>> c
+ConfigModel(separator=',', header_row=0, skip_initial_space=True, skip_rows=None, skip_footer=0, nrows=None, comment=None, fields=[])
+```
+
+`fields` is empty in this case but can be populated when the `ConfigModel` is initialised.
+
+```python
+>>> from config import FeatureModel
+>>> f1 = FeatureModel(name='f1', dtype='int')
+>>> f2 = FeatureModel(name='f2', dtype='str')
+>>> c = ConfigModel(fields=[f1, f2])
+>>> c
+ConfigModel(separator=',', header_row=0, skip_initial_space=True, skip_rows=None, 
+    skip_footer=0, nrows=None, comment=None, fields=[
+        FeatureModel(name='f1', dtype='int', skip=False, na_values=None), 
+        FeatureModel(name='f2', dtype='str', skip=False, na_values=None)
+    ])
+```
+
+## Reading and writing the config to file
+
+With the configuration models completed a configuration file can be created with the default values. Additionally, the
+YAML configuration files will need to be loaded. Let's handle configuration using a new `Config` class with a `load` and
+`save` method.
+
+### Model to file
+
+The `save` method accepts an instance of `ConfigModel` and a `config_file` path to write the file to. The `to_yaml_str`
+function from pydantic-yaml provides the serialisation functionality for Pydantic models.
+
+```python
+import os
+from pydantic_yaml import to_yaml_str
+
+class Config
+
+    def __init__(self, config_file: os.PathLike):
+        self._file = config_file
+        self._config = None
+
+    @classmethod
+    def save(cls, config: ConfigModel, config_file: os.PathLike):
+        with open(config_file, "w") as f:
+            f.write(to_yaml_str(config))
+```
+
+The default model configuration file can then be created.
+
+```python
+>>> Config.save(ConfigModel(), 'default.yaml')
+```
+
+Something isn't right though. The order of the fields has changed from the Pydantic model. More on this soon.
+
+```yml title="default.yaml"
+comment:
+header_row: 0
+fields: []
+nrows:
+separator: ','
+skip_footer: 0
+skip_initial_space: true
+skip_rows:
+
+```
+
+### Model from file
+
+Loading the model is simply the inverse operation and relies upon the pydantic-yaml parser function which accepts as 
+arguments the target Pydantic model class and a Iostream.
+
+```python
+from pydantic_yaml import parse_yaml_raw_as
+
+class Config:
+
+    ...
+
+    def load(self) -> None:
+        with open(self._file, "r") as f:
+            self._config = parse_yaml_raw_as(ConfigModel, f.read())
+```
+
+## A custom YAML writer
+
+### Fixing the field order
+
+Discovering the cause of the field reordering in the output YAML required some digging. The pydantic-yaml library uses the
+inbuilt serialisation and deserialisation functionality of Pydantic to achieve a YAML compatible representation of the models.
+This includes a round trip through JSON which is the serialised Pydantic output. The JSON output from pydantic is serialised
+correctly.
+
+```python
+>>> ConfigModel().model_dump_json()
+'{"separator":",","header_row":0,"skip_initial_space":true,"skip_rows":null,"skip_footer":0,"nrows":null,"comment":null,"fields":[]}'
+```
+
+Therefore the issue is in the conversion of the Pydantic model objects to YAML. At it turns out pydantic-yaml uses the
+`ruamel` library under the hood with the keyword arguments `typ="safe"` and `pure=True` set. The `typ="safe"` option 
+specifically disables some of the nicer preservation of objects that `ruamel` supports. Changing this to `typ="rt"` the
+round-trip version of the writer achieves our ordering outcomes. 
+
+```python
+>>> from ruamel.yaml import YAML
+>>> from pydantic_yaml import to_yaml_str
+>>> to_yaml_str(ConfigModel())
+"comment: null\nfields: []\nheader_row: 0\nnrows: null\nseparator: ','\nskip_footer: 0\nskip_initial_space: true\nskip_rows: null\n"
+
+>>> to_yaml_str(ConfigModel(), custom_yaml_writer=YAML(typ='rt'))
+"separator: ','\nheader_row: 0\nskip_initial_space: true\nskip_rows:\nskip_footer: 0\nnrows:\ncomment:\nfields: []\n"
+```
+
+Updating the `save` method of the `Config` class to use a custom writer is pretty straight forward. We'll also include some extra
+options for the yaml writer that put the YAML document separator at the start of the file by setting `explicit_start = True` on the
+`writer`.
+
+```python
+class Config:
+
+    ...
+
+    @classmethod
+    def save(cls, config: ConfigModel, config_file: os.PathLike):
+        writer = YAML(typ='rt', pure=True)
+        writer.explicit_start = True
+        f.write(to_yaml_str(config, custom_yaml_writer=writer))
+```
+
+Now the default YAML file looks like this. 
+
+```python
+>>> Config.save(ConfigModel(), 'default.yaml')
+```
+
+```yml title="default.yaml"
+---
+separator: ','
+header_row: 0
+skip_initial_space: true
+skip_rows:
+skip_footer: 0
+nrows:
+comment:
+fields: []
+
+```
+
+### YAML comments
+
+Pydantic has some great features for it fields that includes field descriptions. Primarily this is
+for API documentation but I figured it can also be used for commenting our YAML document so that when
+a fresh or default configuration file is produced, comments can be included alongside each field to
+help users understand what they do.
+
+Going back to the `FileModel` defined earlier, fields can be given descriptions as an argument to the
+Field class. For example
+
+```python
+class FileModel(BaseModel):
+    separator: str = Field(default='', description="Character to treat as the delimiter.")
+```
+
+This methodology is straight forward but there is another way which reduces the amount of text we need
+to pass `Field(description=)` and provides more intuitive support for multiline or long descriptions.
+In fact its an extension of docstrings which can be defined below each field. To turn it on the model
+configuration needs to be modified to `use_attribute_docstrings=True`.
+
+```python
+from pydantic import ConfigDict
+
+class FileModel(BaseModel):
+    model_config = ConfigDict(use_attribute_docstrings=True)
+
+    separator: str = Field(default=',')
+    "Character to treat as the delimiter."    
+```
+
+The fields meta data is stored in the model under the `model_fields` attribute.
+
+```python
+>>> ConfigModel().model_fields
+{'separator': FieldInfo(annotation=str, required=False, default=',', description='Character to treat as the delimiter.'),}
+```
+
+Getting these descriptions in our default YAML as comments requires some further investigation of the ruamel library.
+There are a few classes in ruamel that support representations of YAML that can handle comments. Specifically the
+`CommentedMap` class. pydantic-yaml uses the `dump` method of the YAML writer to output the YAML string so perhaps we can
+wrap this method to insert our field descriptions as comments before the yaml string is created.
+
+Turns out this is pretty straight forward to implement by sub-classing the `ruamel.yaml.YAML` writer. The only addition is
+that the `writer` must now be class specific so it has context about the fields it is writing out. Adding the comment to
+the `CommentedMap` instance is possible using `yaml_set_comment_before_after_key` method. Which takes a field key and
+a comment string which can be placed `before` or `after` the YAML item.
+
+```python
+class CommentedYaml(YAML):
+
+    def __init__(self, model: BaseModel = None):
+        self._model = model
+        super().__init__(typ='rt', pure=True)
+
+    def dump(self, data: Any, stream: Any) -> str:
+        data = CommentedMap(data)
+
+        for field, meta in self._model.model_fields.items():
+            if meta.description:
+                # Add the description for a field before the field
+                data.yaml_set_comment_before_after_key(
+                    field,
+                    before = "\n" + meta.description
+                )
+
+        return super().dump(data, stream)
+```
+
+Testing our new writer the comment from the field description has been inserted before the field on a
+fresh line.
+
+```python
+>>> to_yaml_str(ConfigModel(), custom_yaml_writer=CommentedYaml(ConfigModel()))
+"# Character to treat as the delimiter.\nseparator: ','\n..."
+```
+
+The `Config` class `save` method must also be updated to use the new `CommentedYaml` class.
+
+```python
+class Config:
+
+    ...
+
+    @classmethod
+    def save(cls, config: ConfigModel, config_file: os.PathLike):
+        with open(config_file, "w") as f:
+            writer = CommentedYaml(config)
+            writer.explicit_start = True
+            f.write(to_yaml_str(config, custom_yaml_writer=writer))
+```
+
+### Comments for repetitive fields
+
+Adding comments for the fields in `FileModel` is relatively straight forward. Each field is at the top
+level of the YAML document and has a unique name. However, the `FeatureModel` is added the hybrid
+`ConfigModel` as `fields: List[FeatureModel]`. Ideally something that documents the structure of `FeatureModel`
+before `fields` is defined in the yaml document might be useful. For example
+
+```yaml
+# The features/fields of your CSV to load.
+# ----------------
+#   name: None
+#   dtype: None
+#   skip: None
+#   na_values: None
+fields:
+  - name: f1
+    dtype: str
+```
+
+Let's start by adding descriptions to `FeatureModel` and activating `use_attribute_docstrings` configuration feature.
+
+```python
+class FeatureModel(BaseModel):
+    """A list of field specifications that describe the validation parameters for each field.
+    ---------------------------------
+    """
+
+    model_config = ConfigDict(use_attribute_docstrings=True)
+
+    name: str
+    """The name of field."""
+
+    dtype: str
+    """The expected data type of the field."""
+
+    skip: bool = Field(default=False)
+    """Ignore this field (drops from output)."""
+
+    na_values: str = Field(default=None)
+    """NA/Null value representation for this field. Null values will be ignored."""
+```
+
+Then we can extend `FeatureModel` with a method that creates the docstring we want from all the available
+docstrings in the model. It starts with the class docstring `cls.__doc__` and adds the description for each
+field using the same methods as `CommentedYaml`.
+
+```python
+class FeatureModel(BaseModel):
+   ...
+
+    @classmethod
+    def get_docs(cls):
+        docs = cls.__doc__
+        fields = []
+        for field, meta in cls.model_fields.items():
+            fields.append(
+                f"  {field}: {meta.description}"
+            )
+        return docs + "\n".join(fields)
+```
+
+The `get_docs` method returns the composite document for the full model just like we wanted.
+
+```python
+>>> from config import FeatureModel
+>>> FeatureModel.get_docs()
+'A list of field specifications that describe the validation parameters for each field.\n---------------------------------\n  name: The name of field.\n  dtype: The expected data type of the field.\n  skip: Ignore this field (drops from output).\n  na_values: NA/Null value representation for this field. Null values will be ignored.'
+```
+
+The final step now is to describe the description for `fields` in ConfigModel.
+
+```python
+class ConfigModel(FileModel):
+    fields: List[FeatureModel] = Field(default=[], description=FeatureModel.get_docs())
+```
+
+And the default YAML now looks like
+
+```python
+>>> Config.save(ConfigModel(), 'default.yaml')
+```
+
+```yaml title="default.yaml"
+---
+# Character to treat as the delimiter.
+separator: ','
+
+...
+
+# A list of field specifications that describe the validation parameters for each field.
+# ---------------------------------
+#   name: None
+#   dtype: None
+#   skip: None
+#   na_values: None
+fields: []
+```
+
+## Final Solution
+
+Putting it all together we now have a simple tool for reading and writing YAML files that includes the
+handy creation of self documenting default YAML files for configuration. The final solution also includes
+a preface comment at the top of the document which describes the file purpose.
+
+<details type="code">
+<summary>Final Solution</summary>
+```python title="config.py"
+from typing import Any
+
+import os
+from typing import List
+from pydantic import BaseModel, Field, field_validator, ConfigDict
+from pydantic_yaml import parse_yaml_raw_as, to_yaml_str
+from ruamel.yaml import YAML, CommentedMap
+
+
+class FileModel(BaseModel):
+    model_config = ConfigDict(use_attribute_docstrings=True)
+
+    separator: str = Field(default=',')
+    "Character to treat as the delimiter."
+
+    header_row: int = Field(default=0)
+    "Row number containing column labels and marking the start of the data (zero-indexed)."
+    
+    skip_initial_space: bool = Field(default=True)
+    "Skip spaces after delimiter."
+
+    skip_rows: List[int] | int = Field(default=None)
+    "Line numbers to skip (0-indexed) or number of lines to skip (int) at the start of the file."
+    
+    skip_footer: int = Field(default=0)
+    "Number of lines at bottom of file to skip."
+
+    nrows: int = Field(default=None)
+    "Number of rows of file to read. Useful for reading pieces of large files."
+
+    comment: str = Field(default=None)
+    """
+    Character indicating that the remainder of line should not be parsed. If found at the beginning
+    of a line, the line will be ignored altogether. This parameter must be a single character.
+    """
+
+    @field_validator('header_row')
+    @classmethod
+    def _chk_header_rows(cls, v: int) -> int:
+        if v < 0:
+            raise ValueError("header_row must be greater than or equal to 0")
+        return v
+
+
+class FeatureModel(BaseModel):
+    """A list of field specifications that describe the validation parameters for each field.
+    ---------------------------------
+    """
+
+    model_config = ConfigDict(use_attribute_docstrings=True)
+
+    name: str
+    """ The name of field."""
+
+    dtype: str
+    """The expected data type of the field."""
+
+    skip: bool = Field(default=False)
+    """Ignore this field (drops from output)."""
+
+    na_values: str = Field(default=None)
+    """NA/Null value representation for this field. Null values will be ignored."""
+
+    @classmethod
+    def get_docs(cls):
+        docs = cls.__doc__
+        fields = []
+        for field, meta in cls.model_fields.items():
+            fields.append(
+                f"  {field}: {meta.description}"
+            )
+        return docs + "\n".join(fields)
+
+
+class ConfigModel(FileModel):
+    """Configuration file for verifying data files that are messy and difficult to work with.
+    """
+    fields: List[FeatureModel] = Field(default=[], description=FeatureModel.get_docs())
+
+    @field_validator('fields')
+    @classmethod
+    def _chk_field_names_unique(cls, v: List[FeatureModel]) -> List[FeatureModel]:
+        names = [field.name for field in v]
+        if len(names) != len(set(names)):
+            raise ValueError("Field names must be unique")
+        return v
+
+
+class CommentedYaml(YAML):
+
+    def __init__(self, model: BaseModel = None):
+        self._model = model
+        super().__init__(typ='rt', pure=True)
+
+    def dump(self, data: Any, stream: Any) -> str:
+        data = CommentedMap(data)
+
+        # add class description
+        if model_doc:= self._model.__doc__:
+            data.yaml_set_start_comment(model_doc)
+
+        for field, meta in self._model.model_fields.items():
+            if meta.description:
+                data.yaml_set_comment_before_after_key(
+                    field,
+                    before = "\n" + meta.description
+                )
+
+        return super().dump(data, stream)
+
+
+class Config:
+
+    def __init__(self, config_file: os.PathLike):
+        self._file = config_file
+
+    def load(self):
+        with open(self._file, "r") as f:
+            self._config = parse_yaml_raw_as(ConfigModel, f.read())
+
+    @classmethod
+    def save(cls, config: ConfigModel, config_file: os.PathLike):
+        with open(config_file, "w") as f:
+            writer = CommentedYaml(config)
+            writer.explicit_start = True
+            f.write(
+                to_yaml_str(
+                    config, 
+                    custom_yaml_writer=writer
+            ))
+
+```
+</details>
