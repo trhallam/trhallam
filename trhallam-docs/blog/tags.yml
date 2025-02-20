@@ -37,3 +37,18 @@ typescript:
   label: TypeScript
   permalink: /ts
   description: TypeScript related
+
+pydantic:
+  label: Pydantic
+  permalink: /pydantic
+  description: Pydantic Typing Framework
+
+yaml:
+  label: YAML
+  permalink: /yaml
+  description: YAML files
+
+configuration:
+  label: configuration
+  permalink: /config
+  description: Software configuration and management

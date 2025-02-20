@@ -53,7 +53,7 @@ class FileModel(BaseModel):
 ```
 
 Whilst the type checking is included with Pydantic (e.g. `header_row` will be typecast to `int`) additional contextual logic can be
-added to a pydantic model using validator logic. For example, it does not make sense for `header_row` to be less than 0 as
+added to a Pydantic model using validator logic. For example, it does not make sense for `header_row` to be less than 0 as
 the file line index is always a positive value.
 
 ```python
