@@ -1,0 +1,36 @@
+---
+title: WSL2
+---
+
+## Key Links
+
+
+[`wsl.conf`](https://learn.microsoft.com/en-us/windows/wsl/wsl-config#wslconf)
+
+
+
+## Sparse Volumes
+
+
+## Sharing directories between host and WSL
+
+I found this useful for sharing my SSH configuration and keys between the host and the WSL subsystem.
+These means keys can be installed once and used from both environments.
+
+Modify your `/etc/fstab` on the WSL where you want to access windows files.
+
+```title = "/etc/fstab"
+C:/Users/<windows_user>/.ssh /home/<wsl_user>/.ssh drvfs rw,uid=1002,gid=1002,dmask=077,fmask=177,noatime,dirsync,mmap,access=client,msize=262144,trans=virtio
+```
+
+## Systemd Boot (for docker in WSL)
+
+[WSL Docs](https://learn.microsoft.com/en-us/windows/wsl/systemd?source=recommendations)
+
+This is good because it means you don't need docker desktop on Windows but it requires better management
+of docker volume sprawl (see [Sparse Volumes](#sparse-volumes)).
+
+```title = "/etc/wsl.conf"
+[boot]
+systemd=true
+```
